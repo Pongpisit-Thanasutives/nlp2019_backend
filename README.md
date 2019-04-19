@@ -4,7 +4,7 @@ wget --no-check-certificate https://github.com/ekapolc/nlp_2019/raw/master/HW5/B
 
 unzip BEST2010.zip
 
-export FLASK_APP=hello.py
+export FLASK_APP=app.py
 
 flask run
  
