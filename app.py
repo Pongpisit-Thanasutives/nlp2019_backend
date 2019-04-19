@@ -1,5 +1,6 @@
 from flask import request
 
+from tokenizer import SertisTokenizer
 import numpy as np
 from utils import savefile, loadfile
 
@@ -49,6 +50,7 @@ def generate_text(text, next_words, qrnn_model):
         
     return text.strip()
 
+st = SertisTokenizer()
 MAX_LENGTH = 200
 words2idx = loadfile('words2idx.pkl')
 idx2word = loadfile('idx2word.pkl')
@@ -62,6 +64,8 @@ def hello():
 
 @app.route('/generateDocument', methods=['GET'])
 def generateDocument():
+    global st
     initial_text = str(request.args.get('text'))
+    initial_text = st.predict(initial_text)
     number_next_words = int(request.args.get('number_next_words'))
     return generate_text(initial_text, number_next_words, qrnn_model)
