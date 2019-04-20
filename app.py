@@ -157,16 +157,18 @@ def hello():
 @app.route('/generateDocument', methods=['GET'])
 def generateDocument():
     global st
-    initial_text = str(request.args.get('text'))
-    if not request.args.get('number_next_words'): number_next_words = 40
-    else: number_next_words = int(request.args.get('number_next_words'))
-    
-    if initial_text == '': return ''
-    initial_text = st.predict(initial_text)
-    
-    if number_next_words == 0: return initial_text
+    initial_text = str(request.args.get('text1'))
+    text2 = str(request.args.get('text2'))
+
+    if initial_text == '' and text2 == '': return ''
+    if (initial_text != '' and text2 == '') or (initial_text == '' and text2 != ''):
+        initial_text = initial_text + text2
+        return beam_search_decoding(initial_text, [[list(), 0] for i in range(3)], qrnn_model, 3, 0, 40)
+
     else:
         # return generate_text(initial_text, number_next_words, qrnn_model)
-        return beam_search_decoding(initial_text, [[list(), 0] for i in range(3)], qrnn_model, 3, 0, number_next_words)
+        initial_text = st.predict(initial_text)
+        text2 = st.predict(text2)
+        return beam_search_decoding(initial_text, [[list(), 0] for i in range(3)], qrnn_model, 3, 0, 25) + beam_search_decoding(text2, [[list(), 0] for i in range(3)], qrnn_model, 3, 0, 25)
 
 app.run(host='0.0.0.0', port=80)
