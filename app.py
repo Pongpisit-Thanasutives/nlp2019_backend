@@ -126,9 +126,14 @@ def hello():
 def generateDocument():
     global st
     initial_text = str(request.args.get('text'))
+    if not request.args.get('number_next_words'): number_next_words = 40
+    else: number_next_words = int(request.args.get('number_next_words'))
+    
     if initial_text == '': return ''
     initial_text = st.predict(initial_text)
-    number_next_words = int(request.args.get('number_next_words'))
-    return generate_text(initial_text, number_next_words, qrnn_model)
+    
+    if number_next_words == 0: return initial_text
+    else:
+        return generate_text(initial_text, number_next_words, qrnn_model)
 
 app.run(host='0.0.0.0', port=80)
