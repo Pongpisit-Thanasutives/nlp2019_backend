@@ -121,7 +121,7 @@ def beam_search_decoding(test_text, states, model, b, h, next_words):
             distribution = np.squeeze(qrnn_model.predict(pad_sequences([token_list], maxlen=MAX_LENGTH-1, 
                                                                        padding='pre'), verbose=0))
             for idx, p in enumerate(distribution):
-                if idx not in token_list[-3:]:
+                if idx not in token_list[-5:]:
                     order.append((s[1] - np.log(p), token_list + [idx]))
 
         order = sorted(order)
