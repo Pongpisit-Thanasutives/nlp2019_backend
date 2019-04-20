@@ -114,7 +114,7 @@ def beam_search_decoding(test_text, states, model, b, h, next_words):
         order = []
         for s in states:
             if len(s[0]) == 0: 
-                token_list = [words2idx[w] for w in test_text.split()]
+                token_list = [words2idx[w] for w in test_text.split() if w in words2idx]
                 if len(token_list) == 0: token_list = [int(10000 * np.random.uniform(0, 1, 1)[0])]
             else: token_list = s[0]
             
