@@ -18,10 +18,6 @@ from functools import update_wrapper
 
 def crossdomain(origin=None, methods=None, headers=None, max_age=21600,
                 attach_to_all=True, automatic_options=True):
-    """Decorator function that allows crossdomain requests.
-      Courtesy of
-      https://blog.skyred.fi/articles/better-crossdomain-snippet-for-flask.html
-    """
     if methods is not None:
         methods = ', '.join(sorted(x.upper() for x in methods))
     # use str instead of basestring if using Python 3.x
@@ -109,6 +105,42 @@ def generate_text(text, next_words, qrnn_model):
         
     return text.strip()
 
+def beam_search_decoding(test_text, states, model, b, h, next_words):
+    global MAX_LENGTH, words2idx, idx2word
+    if h == next_words:
+        return (' ').join([idx2word[w] for w in states[0][0]])
+    
+    else:
+        order = []
+        for s in states:
+            if len(s[0]) == 0: 
+                token_list = [words2idx[w] for w in test_text.split()]
+                if len(token_list) == 0: token_list = [int(10000 * np.random.uniform(0, 1, 1)[0])]
+            else: token_list = s[0]
+            
+            distribution = np.squeeze(qrnn_model.predict(pad_sequences([token_list], maxlen=MAX_LENGTH-1, 
+                                                                       padding='pre'), verbose=0))
+            for idx, p in enumerate(distribution):
+                if idx not in token_list[-3:]:
+                    order.append((s[1] - np.log(p), token_list + [idx]))
+
+        order = sorted(order)
+        if h != 0: 
+            order = [(v, k) for (k, v) in order[:b]]
+        else:
+            new_order = []
+            s = set()
+            for (k, v) in order:
+                if v[0] not in s:
+                    new_order.append((v, k))
+                    if len(new_order) == b:
+                        break
+                    s.add(v[0])
+            order = new_order
+            
+        return beam_search_decoding(test_text, order, model, b, h+1, next_words)
+
+
 st = SertisTokenizer()
 MAX_LENGTH = 200
 words2idx = loadfile('words2idx.pkl')
@@ -134,6 +166,7 @@ def generateDocument():
     
     if number_next_words == 0: return initial_text
     else:
-        return generate_text(initial_text, number_next_words, qrnn_model)
+        # return generate_text(initial_text, number_next_words, qrnn_model)
+        return beam_search_decoding(initial_text, [[list(), 0] for i in range(3)], qrnn_model, 3, 0, number_next_words)
 
 app.run(host='0.0.0.0', port=80)
