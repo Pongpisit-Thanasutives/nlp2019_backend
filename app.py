@@ -169,6 +169,6 @@ def generateDocument():
         # return generate_text(initial_text, number_next_words, qrnn_model)
         initial_text = st.predict(initial_text)
         text2 = st.predict(text2)
-        return beam_search_decoding(initial_text, [[list(), 0] for i in range(3)], qrnn_model, 3, 0, 25) + beam_search_decoding(text2, [[list(), 0] for i in range(3)], qrnn_model, 3, 0, 25)
+        return beam_search_decoding(initial_text, [[list(), 0] for i in range(3)], qrnn_model, 3, 0, 25) + ' ' + beam_search_decoding(text2, [[list(), 0] for i in range(3)], qrnn_model, 3, 0, 25)
 
 app.run(host='0.0.0.0', port=80)
